@@ -6,10 +6,27 @@ async function iniciarBot() {
 
     const sock = makeWASocket({
         auth: state,
-        printQRInTerminal: true // Pon en true si prefieres QR, o manéjalo con pairing code abajo
+        printQRInTerminal: false
     });
 
     sock.ev.on('creds.update', saveCreds);
+
+    // --- BLOQUE DE CÓDIGO DE VINCULACIÓN ---
+    if (!sock.authState.creds.registered) {
+        const numeroLimpio = "TU_NUMERO_AQUI"; // Ej: "573000000000" (sin +, sin espacios)
+        console.log('🔄 Solicitando código de vinculación...');
+        setTimeout(async () => {
+            try {
+                const code = await sock.requestPairingCode(numeroLimpio);
+                console.log(`\n========================================`);
+                console.log(`🔑 TU CÓDIGO DE VINCULACIÓN ES: ${code}`);
+                console.log(`========================================\n`);
+            } catch (err) {
+                console.error('Error al generar código:', err.message);
+            }
+        }, 3000);
+    }
+    // ----------------------------------------
 
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect } = update;
@@ -29,14 +46,12 @@ async function iniciarBot() {
         const remitente = msg.key.remoteJid;
         const usuarioId = msg.key.participant || remitente;
 
-        // Solo procesar si empieza con punto
         if (!body.startsWith('.')) return;
 
         const partes = body.trim().split(/\s+/);
         const comando = partes[0].toLowerCase();
         const parametro = partes.slice(1).join(' ') || '';
 
-        // --- FILTROS DE GRUPO / ADMIN (Opcional, los dejas si los usas) ---
         if (remitente.endsWith('@g.us') && (comando === '.close' || comando === '.open')) {
             try {
                 const groupMetadata = await sock.groupMetadata(remitente);
@@ -57,8 +72,6 @@ async function iniciarBot() {
             }
         }
 
-        // --- PUENTE A PYTHON (Economía, Menú, etc.) ---
-        // Orden seguro: python3 bot.py "usuarioId" "comando" "parametro"
         const comandoPython = `python3 bot.py "${usuarioId}" "${comando}" "${parametro}"`;
 
         exec(comandoPython, { encoding: 'utf-8' }, async (error, stdout) => {
