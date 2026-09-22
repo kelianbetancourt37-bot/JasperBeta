@@ -28,7 +28,7 @@ base_datos = cargar_todos_los_datos()
 # --- LECTURA SEGURO DE ARGUMENTOS (Node -> Python) ---
 # Espera: python3 bot.py "usuarioId" "comando" "parametro"
 args = sys.argv[1:]
-usuario_id = args[0] if len(args) > 0 and args[0] != "None" else "usuario_general"
+usuario_id = args[0] if len(args) > 0 and args != "None" else "usuario_general"
 mensaje_recibido = args.lower() if len(args) > 1 and args != "None" else ".menu"
 parametro = args if len(args) > 2 and args != "None" else ""
 
