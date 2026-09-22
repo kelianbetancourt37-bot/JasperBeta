@@ -248,7 +248,6 @@ def ejecutar_bot():
         return procesar_admin_command(comando_limpio, user=parametro)
 
 # comandos de admin
-
     elif mensaje_recibido in [".close", ".open", ".antilink", ".antispam", ".tagall"]:
         comando_limpio = mensaje_recibido.replace(".", "")
         return procesar_admin_command(comando_limpio)
@@ -257,10 +256,9 @@ def ejecutar_bot():
     elif mensaje_recibido == ".boton":
         return procesar_admin_command("boton")
     elif mensaje_recibido == ".botoff":
+        return procesar_admin_command("botoff")
 
 # comandos de interaccion
-
-        return procesar_admin_command("botoff")
     elif mensaje_recibido == ".saludar":
         return saludar(parametro)
     elif mensaje_recibido == ".beso":
