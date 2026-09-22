@@ -25,24 +25,12 @@ def guardar_todos_los_datos(datos):
 
 base_datos = cargar_todos_los_datos()
 
-# --- LECTURA LIMPIA POR STDIN (Adiós sys.argv) ---
-try:
-    input_data = sys.stdin.read().strip()
-    payload = json.loads(input_data) if input_data else {}
-except Exception:
-    payload = {}
-
-usuario_id = payload.get("usuario_id", "usuario_general")
-mensaje_recibido = str(payload.get("mensaje_recibido", ".menu")).lower()
-parametro = payload.get("parametro", "")
-tiempo_mensaje = payload.get("tiempo", time.time())
-
-# Validar tiempo opcional
-try:
-    if (time.time() - float(tiempo_mensaje)) > 30:
-        sys.exit(0)
-except (ValueError, TypeError):
-    pass
+# --- LECTURA POR SYS.ARGV SINCRONIZADA CON INDEX.JS ---
+# index.js ejecuta: python3 bot.py "usuarioId" "comando" "parametro"
+args = sys.argv[1:]
+usuario_id = args[0] if len(args) > 0 and args else "usuario_general"
+mensaje_recibido = str(args).lower().strip() if len(args) > 1 and args else ".menu"
+parametro = args if len(args) > 2 else ""
 
 if usuario_id not in base_datos:
     base_datos[usuario_id] = {
