@@ -13,7 +13,7 @@ async function iniciarBot() {
 
     // --- BLOQUE DE CÓDIGO DE VINCULACIÓN ---
     if (!sock.authState.creds.registered) {
-        const numeroLimpio = "TU_NUMERO_AQUI"; // Ej: "573000000000" (sin +, sin espacios)
+        const numeroLimpio = "5595984017858"; // Ej: "573000000000" (sin +, sin espacios)
         console.log('🔄 Solicitando código de vinculación...');
         setTimeout(async () => {
             try {
