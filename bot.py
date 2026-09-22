@@ -28,9 +28,9 @@ base_datos = cargar_todos_los_datos()
 # --- LECTURA SEGURO DE ARGUMENTOS (Node -> Python) ---
 # Espera: python3 bot.py "usuarioId" "comando" "parametro"
 args = sys.argv[1:]
-usuario_id = args[0] if len(args) > 0 and args != "None" else "usuario_general"
-mensaje_recibido = args.lower() if len(args) > 1 and args != "None" else ".menu"
-parametro = args if len(args) > 2 and args != "None" else ""
+usuario_id = args[0] if len(args) > 0 else "usuario_general"
+mensaje_recibido = args.lower() if len(args) > 1 else ".menu"
+parametro = args if len(args) > 2 else ""
 
 # Validar tiempo opcional si se envía un 4to argumento
 tiempo_actual = time.time()
