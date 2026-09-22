@@ -1,6 +1,12 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const { exec } = require('child_process');
 
+// Función auxiliar para escapar comillas y evitar romper el comando de shell
+function escaparArg(str) {
+    if (!str) return '';
+    return str.replace(/"/g, '\\"');
+}
+
 async function iniciarBot() {
     const { state, saveCreds } = await useMultiFileAuthState('Qrcode_Sesion');
 
@@ -45,6 +51,7 @@ async function iniciarBot() {
         const body = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
         const remitente = msg.key.remoteJid;
         const usuarioId = msg.key.participant || remitente;
+        const destinoChat = msg.key.remoteJid; // Seguro para grupos y privados
 
         console.log(`📩 [DEBUG] Mensaje de ${remitente}: "${body}"`);
 
@@ -63,12 +70,12 @@ async function iniciarBot() {
                 const esAdmin = participantes.some(p => p.id === usuarioId && (p.admin === 'admin' || p.admin === 'superadmin'));
 
                 if (!esAdmin) {
-                    await sock.sendMessage(remitente, { text: '⚠️ Solo los administradores pueden usar esto.' }, { quoted: msg });
+                    await sock.sendMessage(destinoChat, { text: '⚠️ Solo los administradores pueden usar esto.' }, { quoted: msg });
                     return;
                 }
                 const estado = comando === '.close' ? 'announcement' : 'not_announcement';
                 await sock.groupSettingUpdate(remitente, estado);
-                await sock.sendMessage(remitente, { text: comando === '.close' ? '🔒 Grupo cerrado.' : '🔓 Grupo abierto.' }, { quoted: msg });
+                await sock.sendMessage(destinoChat, { text: comando === '.close' ? '🔒 Grupo cerrado.' : '🔓 Grupo abierto.' }, { quoted: msg });
                 return;
             } catch (err) {
                 console.error('Error admin:', err.message);
@@ -76,7 +83,12 @@ async function iniciarBot() {
             }
         }
 
-        const comandoPython = `python3 bot.py "${usuarioId}" "${comando}" "${parametro}"`;
+        // Sanitizamos los argumentos para la shell
+        const safeUser = escaparArg(usuarioId);
+        const safeCmd = escaparArg(comando);
+        const safeParam = escaparArg(parametro);
+
+        const comandoPython = `python3 bot.py "${safeUser}" "${safeCmd}" "${safeParam}"`;
         console.log(`🐍 [DEBUG] Ejecutando shell: ${comandoPython}`);
 
         exec(comandoPython, { encoding: 'utf-8' }, async (error, stdout, stderr) => {
@@ -91,7 +103,7 @@ async function iniciarBot() {
 
             if (respuesta) {
                 try {
-                    await sock.sendMessage(remitente, { text: respuesta }, { quoted: msg });
+                    await sock.sendMessage(destinoChat, { text: respuesta }, { quoted: msg });
                 } catch (sendErr) {
                     console.error('Error enviando a WhatsApp:', sendErr.message);
                 }
