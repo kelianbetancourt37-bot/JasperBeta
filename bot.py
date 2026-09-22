@@ -28,10 +28,15 @@ base_datos = cargar_todos_los_datos()
 # --- LECTURA POR SYS.ARGV SINCRONIZADA CON INDEX.JS ---
 # index.js ejecuta: python3 bot.py "usuarioId" "comando" "parametro"
 args = sys.argv[1:]
-usuario_id = args[0] if len(args) > 0 else "usuario_general"
+usuario_id = args if len(args) > 0 else "usuario_general"
 cmd_raw = args if len(args) > 1 else ".menu"
-mensaje_recibido = cmd_raw.lower().strip() if isinstance(cmd_raw, str) else ".menu"
+mensaje_recibido = str(cmd_raw).lower().strip()
 parametro = " ".join(str(x) for x in args[2:]) if len(args) > 2 else ""
+
+# CHIVATO DE DEPURACIÓN EN TERMINAL
+import sys
+print(f"🔍 [DEBUG-PY] cmd_parseado: {repr(mensaje_recibido)} | full_argv: {sys.argv}", file=sys.stderr)
+
 
 if usuario_id not in base_datos:
     base_datos[usuario_id] = {
@@ -267,7 +272,6 @@ def ejecutar_bot():
         return correr(parametro)
     else:
         return f"❓ Comando '{mensaje_recibido}' no reconocido. Usa *.menu* para ver la lista."
-
 
 if __name__ == "__main__":
     try:
