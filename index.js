@@ -13,7 +13,7 @@ async function iniciarBot() {
 
     // --- BLOQUE DE CÓDIGO DE VINCULACIÓN ---
     if (!sock.authState.creds.registered) {
-        const numeroLimpio = "5595984017858"; // Ej: "573000000000" (sin +, sin espacios)
+        const numeroLimpio = "5595984017858"; // Tu número sin + ni espacios
         console.log('🔄 Solicitando código de vinculación...');
         setTimeout(async () => {
             try {
@@ -34,7 +34,7 @@ async function iniciarBot() {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             if (shouldReconnect) iniciarBot();
         } else if (connection === 'open') {
-            console.log('✅ ¡Bot Japer conectado con éxito a WhatsApp!');
+            console.log('✅ ¡Bot Jasper conectado con éxito a WhatsApp!');
         }
     });
 
@@ -46,11 +46,15 @@ async function iniciarBot() {
         const remitente = msg.key.remoteJid;
         const usuarioId = msg.key.participant || remitente;
 
+        console.log(`📩 [DEBUG] Mensaje de ${remitente}: "${body}"`);
+
         if (!body.startsWith('.')) return;
 
         const partes = body.trim().split(/\s+/);
         const comando = partes[0].toLowerCase();
         const parametro = partes.slice(1).join(' ') || '';
+
+        console.log(`⚙️ [DEBUG] Procesando comando: ${comando} | Param: ${parametro}`);
 
         if (remitente.endsWith('@g.us') && (comando === '.close' || comando === '.open')) {
             try {
@@ -73,19 +77,26 @@ async function iniciarBot() {
         }
 
         const comandoPython = `python3 bot.py "${usuarioId}" "${comando}" "${parametro}"`;
+        console.log(`🐍 [DEBUG] Ejecutando shell: ${comandoPython}`);
 
-        exec(comandoPython, { encoding: 'utf-8' }, async (error, stdout) => {
+        exec(comandoPython, { encoding: 'utf-8' }, async (error, stdout, stderr) => {
             if (error) {
-                console.error(`Error ejecutando Python: ${error.message}`);
-                return;
+                console.error(`❌ [EXEC ERROR]: ${error.message}`);
             }
-            const respuesta = stdout.trim();
+            if (stderr) {
+                console.error(`⚠️ [PYTHON STDERR]: ${stderr.trim()}`);
+            }
+            const respuesta = stdout ? stdout.trim() : '';
+            console.log(`✅ [PYTHON STDOUT]: "${respuesta}"`);
+
             if (respuesta) {
                 try {
                     await sock.sendMessage(remitente, { text: respuesta }, { quoted: msg });
                 } catch (sendErr) {
                     console.error('Error enviando a WhatsApp:', sendErr.message);
                 }
+            } else {
+                console.log(`ℹ️ [DEBUG] Python devolvió cadena vacía.`);
             }
         });
     });
