@@ -268,6 +268,7 @@ def ejecutar_bot():
     else:
         return f"❓ Comando '{mensaje_recibido}' no reconocido. Usa *.menu* para ver la lista."
 
+
 if __name__ == "__main__":
     try:
         resultado = ejecutar_bot()
