@@ -25,22 +25,24 @@ def guardar_todos_los_datos(datos):
 
 base_datos = cargar_todos_los_datos()
 
-# --- LECTURA SEGURO DE ARGUMENTOS (Node -> Python) ---
-# Espera: python3 bot.py "usuarioId" "comando" "parametro"
-args = sys.argv[1:]
-usuario_id = args[0] if len(args) > 0 else "usuario_general"
-mensaje_recibido = args.lower() if len(args) > 1 else ".menu"
-parametro = args if len(args) > 2 else ""
+# --- LECTURA LIMPIA POR STDIN (Adiós sys.argv) ---
+try:
+    input_data = sys.stdin.read().strip()
+    payload = json.loads(input_data) if input_data else {}
+except Exception:
+    payload = {}
 
-# Validar tiempo opcional si se envía un 4to argumento
-tiempo_actual = time.time()
-if len(args) > 3 and args != "None":
-    try:
-        tiempo_mensaje = float(args)
-        if (tiempo_actual - tiempo_mensaje) > 30:
-            sys.exit(0)
-    except (ValueError, TypeError):
-        pass
+usuario_id = payload.get("usuario_id", "usuario_general")
+mensaje_recibido = str(payload.get("mensaje_recibido", ".menu")).lower()
+parametro = payload.get("parametro", "")
+tiempo_mensaje = payload.get("tiempo", time.time())
+
+# Validar tiempo opcional
+try:
+    if (time.time() - float(tiempo_mensaje)) > 30:
+        sys.exit(0)
+except (ValueError, TypeError):
+    pass
 
 if usuario_id not in base_datos:
     base_datos[usuario_id] = {
@@ -165,7 +167,7 @@ def ejecutar_bot():
         guardar_todos_los_datos(base_datos)
         return respuesta
     elif mensaje_recibido in [".depositar", ".dep", ".d"]:
-        cantidad = parametro.lower()
+        cantidad = str(parametro).lower()
         cantidad_num = monedas_usuario if (cantidad == "all" or cantidad == "todo") else int(cantidad) if cantidad.isdigit() else 0
         monedas_usuario, banco_usuario, respuesta = procesar_depositar(monedas_usuario, banco_usuario, cantidad_num)
         datos_usuario["monedas"] = monedas_usuario
@@ -173,7 +175,7 @@ def ejecutar_bot():
         guardar_todos_los_datos(base_datos)
         return respuesta
     elif mensaje_recibido in [".retirar", ".ret", ".r"]:
-        cantidad = parametro.lower()
+        cantidad = str(parametro).lower()
         cantidad_num = banco_usuario if (cantidad == "all" or cantidad == "todo") else int(cantidad) if cantidad.isdigit() else 0
         monedas_usuario, banco_usuario, respuesta = procesar_retirar(monedas_usuario, banco_usuario, cantidad_num)
         datos_usuario["monedas"] = monedas_usuario
@@ -192,7 +194,7 @@ def ejecutar_bot():
     elif mensaje_recibido == ".inventario":
         return procesar_inventario(usuario_id, datos_usuario)
     elif mensaje_recibido.startswith(".apostar"):
-        partes = parametro.split() if parametro else []
+        partes = str(parametro).split() if parametro else []
         param = partes[0] if len(partes) > 0 else "0"
         respuesta = procesar_apostar(datos_usuario, param)
         guardar_todos_los_datos(base_datos)
