@@ -144,6 +144,7 @@ def ejecutar_bot():
         datos_usuario["ultimo_trabajo"] = ultimo_trabajo
         guardar_todos_los_datos(base_datos)
         return respuesta
+
     elif mensaje_recibido in [".cofre", ".daily"]:
         if mensaje_recibido == ".daily":
             monedas_usuario, racha_usuario, ultimo_diario, respuesta = procesar_diario(usuario_id, monedas_usuario, racha_usuario, ultimo_diario)
