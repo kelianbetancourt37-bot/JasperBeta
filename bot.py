@@ -28,9 +28,9 @@ base_datos = cargar_todos_los_datos()
 # --- LECTURA POR SYS.ARGV SINCRONIZADA CON INDEX.JS ---
 # index.js ejecuta: python3 bot.py "usuarioId" "comando" "parametro"
 args = sys.argv[1:]
-usuario_id = args[0] if len(args) > 0 and args else "usuario_general"
-mensaje_recibido = str(args).lower().strip() if len(args) > 1 and args else ".menu"
-parametro = args if len(args) > 2 else ""
+usuario_id = args[0] if len(args) > 0 else "usuario_general"
+mensaje_recibido = args.lower() if len(args) > 1 else ".menu"
+parametro = " ".join(args[2:]) if len(args) > 2 else ""
 
 if usuario_id not in base_datos:
     base_datos[usuario_id] = {
